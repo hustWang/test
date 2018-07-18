@@ -1,10 +1,11 @@
 package t_0718;
 /*
- * ¸ø¶¨Ò»¸ö½ö°üº¬Êý×Ö 2-9 µÄ×Ö·û´®£¬·µ»ØËùÓÐËüÄÜ±íÊ¾µÄ×ÖÄ¸×éºÏ¡£
-     ¸ø³öÊý×Öµ½×ÖÄ¸µÄÓ³ÉäÈçÏÂ£¨Óëµç»°°´¼üÏàÍ¬£©¡£×¢Òâ 1 ²»¶ÔÓ¦ÈÎºÎ×ÖÄ¸¡£
-     Ê¾Àý£º
-     ÊäÈë£º"23"
-     Êä³ö£º["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"].
+ * ç»™å®šä¸€ä¸ªä»…åŒ…å«æ•°å­— 2-9 çš„å­—ç¬¦ä¸²ï¼Œè¿”å›žæ‰€æœ‰å®ƒèƒ½è¡¨ç¤ºçš„å­—æ¯ç»„åˆã€‚
+     ç»™å‡ºæ•°å­—åˆ°å­—æ¯çš„æ˜ å°„å¦‚ä¸‹ï¼ˆä¸Žç”µè¯æŒ‰é”®ç›¸åŒï¼‰ã€‚æ³¨æ„ 1 ä¸å¯¹åº”ä»»ä½•å­—æ¯ã€‚
+     ç¤ºä¾‹ï¼š
+     è¾“å…¥ï¼š"23"
+     è¾“å‡ºï¼š["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"].
+     thinking
  */
 import java.util.ArrayList;
 import java.util.List;
