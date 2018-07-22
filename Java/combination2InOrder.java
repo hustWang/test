@@ -1,14 +1,13 @@
-package t_0718;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 
 /*
- * ×Ö·û´®Á½Á½×éºÏ£¬¶Ôµ÷ËãÁ½ÖÖ
- * nextInt()ÔÚ¶ÁÈ¡ÊäÈëºó½«¹â±ê·ÅÔÚÍ¬Ò»ĞĞÖĞ¡£
- * next()Ëü²»ÄÜ¶ÁÁ½¸öÓÉ¿Õ¸ñ·Ö¸ôµÄµ¥´Ê¡£ÁíÍâ£¬ÔÚ¶ÁÈ¡ÊäÈëºó½«¹â±ê·ÅÔÚÍ¬Ò»ĞĞÖĞ ¡£ 
- * nextline()ÔÚ¶ÁÈ¡ÊäÈëÖ®ºó£¬½«¹â±ê·ÅÔÚÏÂÒ»ĞĞ¡£
+ * å­—ç¬¦ä¸²ä¸¤ä¸¤ç»„åˆï¼Œå¯¹è°ƒç®—ä¸¤ç§
+ * nextInt()åœ¨è¯»å–è¾“å…¥åå°†å…‰æ ‡æ”¾åœ¨åŒä¸€è¡Œä¸­ã€‚
+ * next()å®ƒä¸èƒ½è¯»ä¸¤ä¸ªç”±ç©ºæ ¼åˆ†éš”çš„å•è¯ã€‚å¦å¤–ï¼Œåœ¨è¯»å–è¾“å…¥åå°†å…‰æ ‡æ”¾åœ¨åŒä¸€è¡Œä¸­ ã€‚ 
+ * nextline()åœ¨è¯»å–è¾“å…¥ä¹‹åï¼Œå°†å…‰æ ‡æ”¾åœ¨ä¸‹ä¸€è¡Œã€‚
  */
 public class combination2InOrder {
 	
@@ -20,14 +19,16 @@ public class combination2InOrder {
 		Scanner input = new Scanner(System.in);
 		
 		int n = input.nextInt();
-		for (int i=0;i<=n;i++){
+		for (int i=0;i<n;i++){
 			
-			String str = input.nextLine();
+			String str = input.next();//æ­¤å¤„nextline()ä¼šå‡ºç°ç©ºå­—ç¬¦
 			
 			comb1.add(str);
 			comb2.add(str);
+			combL.add(str);
 		}
-			
+		//System.out.println(comb1);
+		//System.out.println(combL);
 		play(comb1,comb2,combL);
 		
 	    }
@@ -42,14 +43,56 @@ public class combination2InOrder {
 					list3.add(str1);
 					time++;
 				}
-				
 			}
 		}
-		System.out.println(list3);
-		System.out.println(time);
+		//æ˜¯å¦éœ€è¦å»é‡æ“ä½œ
+		/*List<String> finallist = new ArrayList<String>();
+		for (int i=0;i<list3.size();i++){
+			if(!finallist.contains(list3.get(i))){
+				finallist.add(list3.get(i));
+			}
+		}
+		
+		isbrackets(finallist);*/
+		int s = isbrackets(list3);
+		
+		//System.out.println(finallist);
+		System.out.println(s);
 	}
 	
-	
+	private static int isbrackets(List<String> list){
+		int right = 0;
+		Stack<Character> stack = null;
+		for(int m = 0;m<list.size();m++){
+			if(list.get(m).length()%2==1){
+				continue;
+			}else{
+				stack = new Stack<Character>();
+
+				for(int i=0;i<list.get(m).length();i++){
+					if(stack.isEmpty()){
+						stack.push(list.get(m).charAt(i));
+					}else if(stack.peek() == '[' && list.get(m).charAt(i)==']'
+						  || stack.peek() == '(' && list.get(m).charAt(i)==')'
+						  || stack.peek() == '{' && list.get(m).charAt(i)=='}'){
+						stack.pop();
+					}else{
+						stack.push(list.get(m).charAt(i));
+					}
+				}
+				
+				if(stack.isEmpty()){  
+                    //å¦‚æœæ ˆæ˜¯ç©ºçš„ï¼Œè¯´æ˜æ‹¬å·åŒ¹é…  
+                    System.out.println("Yes");  
+                    right++;
+                }else{  
+                    //è¯´æ˜æ ˆä¸ä¸ºç©ºï¼Œæ‹¬å·ä¸åŒ¹é…  
+                    System.out.println("No");  
+                }  
+			}
+		}
+		return right; 
+	}
 	
 	
 }
