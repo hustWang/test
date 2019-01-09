@@ -4,7 +4,7 @@ import bmesh
 import time
 from datetime import datetime 
 from bpy.props import *
-
+#资源视图的饼状图
 class CreateOperator01(bpy.types.Operator):
     bpy.ops.object.delete(use_global=False)
     #创建物体01
