@@ -20,7 +20,7 @@ import bpy
 from bpy.props import *
 from bpy_extras import view3d_utils
 
-
+#devstack实例展示部分
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 
 data_instance = []
