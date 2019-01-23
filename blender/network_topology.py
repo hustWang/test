@@ -107,6 +107,8 @@ class VadCustomNode(Node, VadCustomTreeNode):
     
     string_name = bpy.props.StringProperty()
     
+    index = bpy.props.IntProperty(default = 0)
+    
     def init(self, context):
         self.inputs.new('VadSocketType', " ")
       
@@ -181,10 +183,9 @@ if __name__ == "__main__":
             
     edges = data0
     edges1 = data1
-    print(edges)
-    print(edges1)
+   
     available_nodes = set(e['r_name'] for e in edges) | set(e["net_name"] for e in edges) | set(e["display_name"] for e in data1)
-    print(available_nodes)
+
     labels = list(available_nodes)
     
     
@@ -195,8 +196,7 @@ if __name__ == "__main__":
         generate_edges2(*labels, **edges1[k])
     
     G = ig.Graph(Edges, directed = False)
-    # layt = G.layout_reingold_tilford(mode="in")
-    # large_graph(100)/tree(200)/lgl(100)
+
     layt = G.layout("tree")
     layt.center()
     master_nodes = {}
@@ -208,7 +208,7 @@ if __name__ == "__main__":
      
     json_str = dumps({"edges": edges+edges1, "nodes": master_nodes})
     network = json.loads(json_str)
-    print(network)
+   
     bpy.context.scene.use_nodes = True
     tree = bpy.context.scene.node_tree
 
@@ -216,55 +216,20 @@ if __name__ == "__main__":
     for node in tree.nodes:
         tree.nodes.remove(node)
     
-    # data0 = []
-    # list_node = []
-    # with open("e:/20190116_1.json") as in_file:
-            # value = 0
-            # for line in in_file.readlines():
-                # value = value + 100
-                
-                # edges = json.loads(line)
-                
-                # flag = 0
-                # for i in range(len(list_node)):
-                    # if list_node[i].label == edges["net_name"]:
-                        # node_length_1 = tree.nodes.new(type='VadNodeType')
-                        # node_length_1.label = edges["name"]
-                        # node_length_1.string_name = edges["name"]
-                        # tree.links.new(list_node[i].outputs[0], node_length_1.inputs[0])
-                        # flag = 1
-                        # break
-                # if flag == 0:
-                        # node_length_1 = tree.nodes.new(type='VadNodeType')
-                        # node_length_2 = tree.nodes.new(type='VadNodeType')
-                        # node_length_1.label = edges["net_name"]
-                        # node_length_1.string_name = edges["net_name"]
-                        # node_length_2.label = edges["name"]
-                        # node_length_2.string_name = edges["name"]
-                        # node_length_1.location = value,value
-                        # node_length_2.location = value+90,value+200
-                        # tree.links.new(node_length_1.outputs[0], node_length_2.inputs[0])
-                        # list_node.append(node_length_1)
-                        # list_node.append(node_length_2)
-                        
-                # value = value+100
-                # data0.append(edges)
-                
-                # print(list_node[1])
-    #create input vad node
-    # bpy.ops.node.duplicate(keep_inputs=True)
-    
     for vad_label in labels:
         vad_node = tree.nodes.new(type='VadNodeType')
         vad_node.location = tuple(network["nodes"][vad_label]["location"])
         vad_node.name = vad_label
         vad_node.label = vad_label
-        # vad_node.VAD = network["nodes"][vad_label]["address"]
-    
+        vad_node.inputs[0].link_limit = 4095
+        #vad_node.inputs.new('VadSocketType', " ")
+     
     links = tree.links
+    
     for e in edges:
         source_r = tree.nodes[e["r_name"]]
         source_net = tree.nodes[e["net_name"]]
+   
         if e["net_name"]=="public":
             links.new(source_net.outputs[0], source_r.inputs[0])
         else:
@@ -274,19 +239,4 @@ if __name__ == "__main__":
         source = tree.nodes[e["net_name"]]
         target = tree.nodes[e["display_name"]]
         links.new(source.outputs[0], target.inputs[0])
-    
-    # vad_node = tree.nodes.new(type='VadNodeType')
-    # vad_node.location = 0,0
- 
-    # he = "rqewrqewqr"
-    # vad_node1 = tree.nodes.new(type='VadNodeType')   
-    # vad_node1.location = 400,0
-    # vad_node1.label = "lalalala" # vad node's header, not the content
-    # he = "qqwe"
-    # vad_node2 = tree.nodes.new(type='VadNodeType')
-    # vad_node2.location = 400,200
-
-    # links = tree.links
-    # links.new(vad_node.outputs[0], vad_node1.inputs[0])
-    # links.new(vad_node.outputs[0], vad_node2.inputs[0])
-    # links.new(vad_node1.outputs[0], vad_node2.inputs[0])
+        
