@@ -20,15 +20,17 @@ import bpy
 from bpy.props import *
 from bpy_extras import view3d_utils
 
-
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 
 data_instance = []
-with open("e:/20181221.json") as f:
+with open("json/20181221.json") as f:
     for line in f.readlines():
         dic = json.loads(line)
         data_instance.append(dic)
-        
+
+#bpy.context.scene.render.resolution_percentage = 80
+print(bpy.context.scene)
+# bpy.context.scene.render.resolution_percentage1 = 60        
 def instance_update(self,context):
     #切换场景，用于多场景展示不同的内容
     bpy.context.scene.layers[0] = False
@@ -37,7 +39,7 @@ def instance_update(self,context):
     data1 = []
     if scene.MyEnum == '0':
 
-        with open("e:/20181221.json") as in_file:
+        with open("json/20181221.json") as in_file:
             for line in in_file.readlines():     
                 edges1 = json.loads(line)        
                 data1.append(edges1)
@@ -73,7 +75,7 @@ def instance_update(self,context):
 
         draw_network(network)
     elif scene.MyEnum == '1':
-        with open("e:/20190107.json") as in_file:
+        with open("json/20190107.json") as in_file:
             for line in in_file.readlines():
                 edges = json.loads(line)
             
@@ -110,7 +112,7 @@ def instance_update(self,context):
 
         draw_network(network)
     else:
-        with open("e:/20190106.json") as in_file:
+        with open("json/20190106.json") as in_file:
             for line in in_file.readlines():
                 edges = json.loads(line)
       
@@ -156,9 +158,6 @@ def RL_instance(self,context):
         bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.object.select_all()
         bpy.ops.object.delete()
-        # bpy.ops.mesh.select_all(action='DESELECT')
-        # bpy.ops.mesh.select_all()
-        # bpy.ops.mesh.delete()
 
 def RL_resourse(self,context):
     bpy.context.scene.layers[0] = False
@@ -168,12 +167,37 @@ def RL_resourse(self,context):
         scene.MyBool_Ins = False
         bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.object.select_all()
-        bpy.ops.object.delete()
-        
-    
+        bpy.ops.object.delete()  
 
 def initSceneProperties(scn):
- 
+
+    bpy.types.Scene.cpu_rs = bpy.props.IntProperty(
+            name = "CPU RS",
+            description = "Sample integer property to print to user",
+            default = 40,
+            min = 0,
+            max = 100,
+            subtype = "PERCENTAGE"
+            )  
+            
+    bpy.types.Scene.local_gb_rs = bpy.props.IntProperty(
+            name = "local_gb rs",
+            description = "Sample integer property to print to user",
+            default = 40,
+            min = 0,
+            max = 100,
+            subtype = "PERCENTAGE"
+            ) 
+            
+    bpy.types.Scene.memory_rs = bpy.props.IntProperty(
+            name = "memory rs",
+            description = "Sample integer property to print to user",
+            default = 40,
+            min = 0,
+            max = 100,
+            subtype = "PERCENTAGE"
+            ) 
+
     bpy.types.Scene.MyBool_RL = BoolProperty(
         name = "Boolean", 
         description = "True or False?",
@@ -203,16 +227,6 @@ def initSceneProperties(scn):
     scn['MyEnum'] = 0
  
 initSceneProperties(bpy.context.scene)
-
-# blender add-on部分——tool shelf中的Drawing Line部分
-bl_info = {
-    "name": "Simple Line Drawing",
-    "author": "lwm",
-    "location": "View3D > Tools > Drawing",
-    "version": (1, 0, 0),
-    "blender": (2, 7, 9),
-    "description": "Minimal add-on for line drawing"
-}
 
 #color and font
 rgb_label = (1, 0.8, 0.1, 1.0)
@@ -315,14 +329,7 @@ class glrun(bpy.types.Operator):
         else:
             print('3D Viewport is not found')
             return {'CANCELLED'}
-     
-class hello_OP(bpy.types.Operator):
-    bl_idname = 'hello.glpanel'
-    bl_label = 'Instance_d'
     
-    def execute(self,execute):
-        print("1")
-     
 class glpanel(bpy.types.Panel):
     bl_idname = 'glinfo.glpanel'
     bl_label = 'Instance_display'
@@ -377,43 +384,33 @@ class glpanel(bpy.types.Panel):
     def unregister(cls):
         #del bpy.types.Scene.gl_display_names
         del bpy.types.Scene.hello_rl
-        print('unregister {}'.format(cls.bl_idname))
+        print('unregister {}'.format(cls.bl_idname))      
 
-
-# blender add-on部分——tool shelf中的Dynamic display
-bl_info2 = {
-    "name": "Dynamic display",
-    "author": "ksm",
-    "location": "View3D > Tools > Dynamic",
-    "version": (1, 0, 0),
-    "blender": (2, 7, 9),
-    "description": "Display memory changes dynamicly"
-}
-
-# class displayPanel(bpy.types.Panel):
-    # bl_idname = 'process.DynamicDisplay'
-    # bl_label = 'Dynamic display'
-    # bl_space_type = 'VIEW_3D'
-    # bl_region_type = 'TOOLS'
-    # bl_category = 'Dynamic'
-
-    # def draw(self, context):
-        # col = self.layout.column(align=True)
-        # col.label(text="Control:")
-        # row = col.row(align=True)
-        # row.operator("process.prev", text="Prev")
-        # row.operator("process.next", text="Next")
-
-    # @classmethod
-    # def register(cls):
-        # print('register {}'.format(cls.bl_idname))
-
-    # @classmethod
-    # def unregister(cls):
-        # print('unregister {}'.format(cls.bl_idname))
-
-
-
+class glpanel_rs(bpy.types.Panel):
+    bl_idname = 'glinfo.rspanel'
+    bl_label = 'Resourse_display'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'TOOLS'
+    bl_category = 'Show'
+    
+    def draw(self, context):
+        layout = self.layout
+        print(context.scene.render.resolution_percentage)
+        scene = context.scene
+        rd = scene.render
+       
+        split = layout.split()
+        col = split.column()
+        sub = col.column(align=True)
+        sub.label(text="CPU 使用量:")
+        sub.prop(context.scene, "cpu_rs", text="",slider = True)
+        
+        sub.label(text="磁盘 使用量:")
+        sub.prop(context.scene, "local_gb_rs", text="",slider = True)
+        
+        sub.label(text="内存 使用量:")
+        sub.prop(context.scene, "memory_rs", text="",slider = True)
+        
 # 3Dview中UI地区的菜单
 class UIPanel(bpy.types.Panel):
     bl_idname = "UIPanel.process"
@@ -441,27 +438,23 @@ class UIPanel(bpy.types.Panel):
 def register():
     
     bpy.utils.register_class(glrun)
-    bpy.utils.register_class(hello_OP)
     bpy.utils.register_class(glpanel)
-    # bpy.utils.register_class(displayPanel)
- 
+    bpy.utils.register_class(glpanel_rs)
     bpy.utils.register_class(UIPanel)
     wm = bpy.types.WindowManager
     wm.run_opengl = bpy.props.BoolProperty(default=False)
-    print('{} register complete'.format(bl_info.get('name')))
+    # print('{} register complete'.format(bl_info.get('name')))
 
 def unregister():
   
     bpy.utils.unregister_class(glpanel)
-    bpy.utils.register_class(hello_OP)
-    bpy.utils.unregister_class(glrun)
-    # bpy.utils.unregister_class(displayPanel)
-   
+    bpy.utils.unregister_class(glpanel_rs)
+    bpy.utils.unregister_class(glrun)   
     bpy.utils.unregister_class(UIPanel)
     wm = bpy.types.WindowManager
     if 'run_opengl' in wm:
         del wm[p]
-    print('{} unregister complete'.format(bl_info.get('name')))
+    # print('{} unregister complete'.format(bl_info.get('name')))
 
 '''
 输出json格式内容
@@ -613,8 +606,20 @@ if __name__ == "__main__":
     # network = json.loads(json_str)
 
     # draw_network(network)
+        
+    with open("json/20181213.json") as f:
+        tmp = json.load(f)
     
-
+    vcpus = tmp['vcpus']
+    num = tmp['running_vms']
+    memory_mb = tmp['memory_mb'] 
+    memory_mb_used = tmp['memory_mb_used']
+    local_gb = tmp['local_gb']
+    local_gb_used = tmp['local_gb_used']
+        
+    bpy.context.scene.cpu_rs = num/vcpus*100
+    bpy.context.scene.local_gb_rs = local_gb_used/local_gb*100
+    bpy.context.scene.memory_rs = memory_mb_used/memory_mb*100
     
     try:
         unregister()
