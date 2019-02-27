@@ -23,10 +23,16 @@ from bpy_extras import view3d_utils
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 
 data_instance = []
-with open("json/20181221.json") as f:
+data_image = []
+with open("json/instance_info.json") as f:
     for line in f.readlines():
         dic = json.loads(line)
         data_instance.append(dic)
+        
+with open("json/image_info.json") as f1:
+    for line1 in f1.readlines():
+        dic1 = json.loads(line1)
+        data_image.append(dic1)
 
 #bpy.context.scene.render.resolution_percentage = 80
 print(bpy.context.scene)
@@ -39,19 +45,19 @@ def instance_update(self,context):
     data1 = []
     if scene.MyEnum == '0':
 
-        with open("json/20181221.json") as in_file:
+        with open("json/instance_info.json") as in_file:
             for line in in_file.readlines():     
                 edges1 = json.loads(line)        
                 data1.append(edges1)
                 edges1 = data1      
-        available_nodes = set(e["memory_mb"] for e in edges1) | set(e["display_name"] for e in edges1)
+        available_nodes = set(e["images_name"] for e in edges1) | set(e["display_name"] for e in edges1)
        
         labels = list(available_nodes)
     
         Edges = []
         def generate_edges(*args, **kw):
-            if kw['memory_mb'] in args:
-                i = args.index(kw["memory_mb"])
+            if kw['images_name'] in args:
+                i = args.index(kw["images_name"])
             if kw['display_name'] in args:
                 j = args.index(kw["display_name"])
             tup = (i, j)
@@ -74,58 +80,22 @@ def instance_update(self,context):
         bpy.ops.object.delete()
 
         draw_network(network)
+        
     elif scene.MyEnum == '1':
-        with open("json/20190107.json") as in_file:
+        with open("json/instance_info.json") as in_file:
             for line in in_file.readlines():
                 edges = json.loads(line)
             
                 data1.append(edges)
                 edges = data1
                 
-        available_nodes = set(e["memory_mb"] for e in edges) | set(e["display_name"] for e in edges)
+        available_nodes = set(e["images_name"] for e in edges) | set(e["display_name"] for e in edges)
         labels = list(available_nodes)
     
         Edges = []
         def generate_edges(*args, **kw):
-            if kw['memory_mb'] in args:
-                i = args.index(kw["memory_mb"])
-            if kw['display_name'] in args:
-                j = args.index(kw["display_name"])
-            tup = (i, j)
-            Edges.append(tup)
-            
-        for k in range(len(edges)):
-            generate_edges(*labels, **edges[k])
-        G = ig.Graph(Edges, directed = False)
-        layt = G.layout("kk", dim = 3)
-        layt.center()
-        master_nodes = {}
-        for i in range(len(labels)):
-            master_nodes[labels[i]] = {"location":[j*10 for j in layt[i]]}
-
-        json_str = dumps({"edges": edges, "nodes": master_nodes})
-        network = json.loads(json_str)
-
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.ops.object.select_all()
-        bpy.ops.object.delete()
-
-        draw_network(network)
-    else:
-        with open("json/20190106.json") as in_file:
-            for line in in_file.readlines():
-                edges = json.loads(line)
-      
-                data1.append(edges)
-                edges = data1
-
-        available_nodes = set(e["memory_mb"] for e in edges) | set(e["display_name"] for e in edges)
-        labels = list(available_nodes)
-    
-        Edges = []
-        def generate_edges(*args, **kw):
-            if kw['memory_mb'] in args:
-                i = args.index(kw["memory_mb"])
+            if kw['images_name'] in args:
+                i = args.index(kw["images_name"])
             if kw['display_name'] in args:
                 j = args.index(kw["display_name"])
             tup = (i, j)
@@ -149,25 +119,54 @@ def instance_update(self,context):
 
         draw_network(network)
         
+    else:
+        with open("json/instance_info.json") as in_file:
+            for line in in_file.readlines():
+                edges = json.loads(line)
+      
+                data1.append(edges)
+                edges = data1
+
+        available_nodes = set(e["images_name"] for e in edges) | set(e["display_name"] for e in edges)
+        labels = list(available_nodes)
+    
+        Edges = []
+        def generate_edges(*args, **kw):
+            if kw['images_name'] in args:
+                i = args.index(kw["images_name"])
+            if kw['display_name'] in args:
+                j = args.index(kw["display_name"])
+            tup = (i, j)
+            Edges.append(tup)
+            
+        for k in range(len(edges)):
+            generate_edges(*labels, **edges[k])
+        G = ig.Graph(Edges, directed = False)
+        layt = G.layout("kk", dim = 3)
+        layt.center()
+        master_nodes = {}
+        for i in range(len(labels)):
+            master_nodes[labels[i]] = {"location":[j*10 for j in layt[i]]}
+
+        json_str = dumps({"edges": edges, "nodes": master_nodes})
+        network = json.loads(json_str)
+
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.select_all()
+        bpy.ops.object.delete()
+
+        draw_network(network)
+        
+        
 def RL_instance(self,context):
     bpy.context.scene.layers[0] = False
     bpy.context.scene.layers[1] = True
     scene = bpy.context.scene
     if scene.MyBool_Ins == True:
-        scene.MyBool_RL = False
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.ops.object.select_all()
-        bpy.ops.object.delete()
 
-def RL_resourse(self,context):
-    bpy.context.scene.layers[0] = False
-    bpy.context.scene.layers[1] = True
-    scene = bpy.context.scene
-    if scene.MyBool_RL == True:
-        scene.MyBool_Ins = False
         bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.object.select_all()
-        bpy.ops.object.delete()  
+        bpy.ops.object.delete() 
 
 def initSceneProperties(scn):
 
@@ -200,8 +199,7 @@ def initSceneProperties(scn):
 
     bpy.types.Scene.MyBool_RL = BoolProperty(
         name = "Boolean", 
-        description = "True or False?",
-        update = RL_resourse)
+        description = "True or False?")
     
     bpy.types.Scene.MyBool_Ins = BoolProperty(
         name = "Boolean", 
@@ -220,9 +218,9 @@ def initSceneProperties(scn):
  
     bpy.types.Scene.MyEnum = EnumProperty(
         items = [("0","全部实例","All instances"),
-                 ("1","运行实例","running instances"),
-                 ("2","错误实例","error instances")],
-        name = "实例选项",
+                 ("1","运行的实例","running instances"),
+                 ("2","停止的实例","stopped instances")],
+        name = "选项",
         update = instance_update)
     scn['MyEnum'] = 0
  
@@ -257,8 +255,8 @@ def draw_line(v1, v2):
         bgl.glEnd()
 
 def generate_edges(*args, **kw):
-        if kw['memory_mb'] in args:
-            i = args.index(kw["memory_mb"])
+        if kw['images_name'] in args:
+            i = args.index(kw["images_name"])
         if kw['display_name'] in args:
             j = args.index(kw["display_name"])
         tup = (i, j)
@@ -277,7 +275,7 @@ def draw_main(context):
 
     for edge in network["edges"]:
         # 通过遍历获取源和目标的位置
-        source_name = edge["memory_mb"]
+        source_name = edge["images_name"]
         target_name = edge["display_name"]
         source_obj = bpy.data.objects[source_name]
         target_obj = bpy.data.objects[target_name]
@@ -332,7 +330,7 @@ class glrun(bpy.types.Operator):
     
 class glpanel(bpy.types.Panel):
     bl_idname = 'glinfo.glpanel'
-    bl_label = 'Instance_display'
+    bl_label = '系统实例详情'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'Show'
@@ -355,21 +353,45 @@ class glpanel(bpy.types.Panel):
         row = lay.row()
         #根据bpy.context.scene的属性确定选项
         scn = context.scene
-        layout.prop(scn, 'MyBool_RL',text = '系统资源详情')
-        layout.prop(scn, 'MyBool_Ins',text = '实例详情')
+        #layout.prop(scn, 'MyBool_RL',text = '系统资源详情')
+        # layout.prop(scn, 'MyBool_Ins',text = '实例详情')
         layout.prop(scn, 'MyEnum')
-
+        
         row = lay.row()
-        name_ob = context.object.name
+        #name_ob = context.object.name
+        # name_ob = context.scene.objects.active.name
+        name_ob = context.selected_objects[0].name
         for instance in data_instance:
   
             if instance['display_name']==name_ob:
+                lay.label("实例详情 ：")
                 box = lay.box()
-                box.label("hostname : "+instance['hostname'])
-                box.label("memory_mb : "+str(instance['memory_mb']))
+                box.label("display_name : "+instance['display_name'])
+                box.label("images_name : "+instance['images_name'])
+                box.label("vm_state : "+instance['vm_state'])
+                box.label("host : "+instance['host'])
+                box.label("vcpus : "+str(instance['vcpus']))
+                box.label("memory_mb : "+str(instance['memory_mb'])+"MB")
+                box.label("root_gb : "+str(instance['root_gb'])+"GB")
+                box.label("availability_zone : "+instance['availability_zone'])
                 box.label("updated_at : "+instance['updated_at'])
+                box.label("launched_at : "+instance['launched_at'])
+                box.label("created_at : "+instance['created_at'])
+                row = lay.row()
+                
+        for instance1 in data_image:
+            if instance1["images_name"]==name_ob:
+                lay.label("实例镜像详情 ：")
+                box = lay.box()
+                box.label("images_name : "+instance1['images_name'])
+                box.label("status : "+instance['status'])
+                box.label("images_create : "+str(instance1['images_create']))
+                box.label("images_update : "+str(instance1['images_update']))
+                box.label("visibility : "+instance1['visibility'])
+                box.label("size : "+str(instance1['size']/1024/1024)+"MB")
+                box.label("disk_format : "+instance1['disk_format'])
+                box.label("container_format : "+instance1['container_format'])
                 row = lay.row() 
-        
     @classmethod
     def register(cls):
         bpy.types.Scene.gl_display_names = bpy.props.BoolProperty(
@@ -388,27 +410,30 @@ class glpanel(bpy.types.Panel):
 
 class glpanel_rs(bpy.types.Panel):
     bl_idname = 'glinfo.rspanel'
-    bl_label = 'Resourse_display'
+    #bl_label = 'Resourse_display'
+    bl_label = '系统资源使用详情'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'Show'
     
     def draw(self, context):
         layout = self.layout
-        print(context.scene.render.resolution_percentage)
+        
         scene = context.scene
         rd = scene.render
        
         split = layout.split()
         col = split.column()
         sub = col.column(align=True)
-        sub.label(text="CPU 使用量:")
+        sub.label(text="CPU 使用量: "+"("+"%s"%(num)+" / "+"%s"%(vcpus)+")" )
         sub.prop(context.scene, "cpu_rs", text="",slider = True)
-        
-        sub.label(text="磁盘 使用量:")
+        #print(bpy.context.scene.cpu_rs)
+        #使用量变高时，颜色可以想办法来设定不同的样式
+        #local_gb_rs = 0.9, 0, 0
+        sub.label(text="磁盘 使用量: "+"("+"%s"%(local_gb_used)+"GB"+" / "+"%s"%(local_gb)+"GB"+")")
         sub.prop(context.scene, "local_gb_rs", text="",slider = True)
         
-        sub.label(text="内存 使用量:")
+        sub.label(text="内存 使用量: "+"("+"%s"%(memory_mb_used)+"MB"+" / "+"%s"%(memory_mb)+"MB"+")")
         sub.prop(context.scene, "memory_rs", text="",slider = True)
         
 # 3Dview中UI地区的菜单
@@ -519,8 +544,9 @@ def draw_network(network):
     """ Takes assembled network/molecule data and draws to blender """
     # 增加原始网格
     bpy.ops.object.select_all(action='DESELECT')
-    bpy.ops.mesh.primitive_cone_add(vertices=3, depth=1.414213)
-    cube = bpy.context.object
+    # bpy.ops.mesh.primitive_cone_add(vertices=3, depth=1.414213)
+    bpy.ops.mesh.primitive_uv_sphere_add()
+    cube = bpy.context.scene.objects['Sphere']
 
     # 保存所有节点和边的引用
     shapes = []
@@ -542,7 +568,7 @@ def draw_network(network):
     
     for edge in network["edges"]:
         # 通过遍历获取源和目标的位置
-        source_name = edge["memory_mb"]
+        source_name = edge["images_name"]
         target_name = edge["display_name"]
         source_obj = bpy.data.objects[source_name]
         target_obj = bpy.data.objects[target_name]
@@ -567,7 +593,7 @@ def draw_network(network):
 
     # 将整个物体居中对齐
     bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="MEDIAN")
-
+    
     # 刷新场景
     bpy.context.scene.update()
 
@@ -575,6 +601,7 @@ data0 = []
 if __name__ == "__main__":
     bpy.context.scene.layers[0] = False
     bpy.context.scene.layers[1] = True
+    
     # try:
         # with open("e:/20190107.json") as in_file:
             # for line in in_file.readlines():
