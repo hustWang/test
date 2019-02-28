@@ -21,9 +21,11 @@ from bpy.props import *
 from bpy_extras import view3d_utils
 
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
-
+#存放实例信息
 data_instance = []
+#存放镜像信息
 data_image = []
+
 with open("json/instance_info.json") as f:
     for line in f.readlines():
         dic = json.loads(line)
@@ -34,9 +36,75 @@ with open("json/image_info.json") as f1:
         dic1 = json.loads(line1)
         data_image.append(dic1)
 
-#bpy.context.scene.render.resolution_percentage = 80
-print(bpy.context.scene)
-# bpy.context.scene.render.resolution_percentage1 = 60        
+#color and font
+rgb_label = (1, 0.8, 0.1, 1.0)
+font_size = 16
+font_id = 0
+
+def gl_pts(context, v):
+    return view3d_utils.location_3d_to_region_2d(context.region, context.space_data.region_3d, v)
+
+def draw_name(context, ob, rgb_label, fsize):
+    a = gl_pts(context, ob.location)
+    bgl.glColor4f(rgb_label[0], rgb_label[1], rgb_label[2], rgb_label[3])
+    draw_text(a, ob.name, fsize)
+
+def draw_text(v, display_text, fsize, font_id=0):
+    if v:
+        blf.size(font_id, font_size, 72)
+        blf.position(font_id, v[0], v[1], 0)
+        blf.draw(font_id, display_text)
+
+    return
+
+def draw_line(v1, v2):
+    if v1 and v2:
+        bgl.glBegin(bgl.GL_LINES)
+        bgl.glVertex2f(*v1)
+        bgl.glVertex2f(*v2)
+        bgl.glEnd()
+
+def generate_edges(*args, **kw):
+        if kw['images_name'] in args:
+            i = args.index(kw["images_name"])
+        if kw['display_name'] in args:
+            j = args.index(kw["display_name"])
+        tup = (i, j)
+        Edges.append(tup)        
+        
+def draw_main(context):
+    scene = context.scene
+
+    rgb_line = (0.173, 0.545, 1.0, 1.0)
+    rgb_label = (0.1, 0.1, 0.1, 1.0)
+    fsize = 16
+
+    bgl.glEnable(bgl.GL_BLEND)
+    bgl.glLineWidth(1)
+    bgl.glColor4f(*rgb_line)
+
+    for edge in network["edges"]:
+        # 通过遍历获取源和目标的位置
+        source_name = edge["images_name"]
+        target_name = edge["display_name"]
+        source_obj = bpy.data.objects[source_name]
+        target_obj = bpy.data.objects[target_name]
+        # source_obj = target_obj.parent
+        v1 = gl_pts(context, source_obj.matrix_world.to_translation())
+        v2 = gl_pts(context, target_obj.matrix_world.to_translation())
+        draw_line(v1, v2)
+
+    # Store reference to active object
+    ob = context.object
+    #print(ob)
+    
+    if scene.gl_display_names:
+        draw_name(context, ob, rgb_label, fsize)
+
+    bgl.glLineWidth(1)
+    bgl.glDisable(bgl.GL_BLEND)
+    bgl.glColor4f(0.0, 0.0, 0.0, 1.0)
+        
 def instance_update(self,context):
     #切换场景，用于多场景展示不同的内容
     bpy.context.scene.layers[0] = False
@@ -226,75 +294,6 @@ def initSceneProperties(scn):
  
 initSceneProperties(bpy.context.scene)
 
-#color and font
-rgb_label = (1, 0.8, 0.1, 1.0)
-font_size = 16
-font_id = 0
-
-def gl_pts(context, v):
-    return view3d_utils.location_3d_to_region_2d(context.region, context.space_data.region_3d, v)
-
-def draw_name(context, ob, rgb_label, fsize):
-    a = gl_pts(context, ob.location)
-    bgl.glColor4f(rgb_label[0], rgb_label[1], rgb_label[2], rgb_label[3])
-    draw_text(a, ob.name, fsize)
-
-def draw_text(v, display_text, fsize, font_id=0):
-    if v:
-        blf.size(font_id, font_size, 72)
-        blf.position(font_id, v[0], v[1], 0)
-        blf.draw(font_id, display_text)
-
-    return
-
-def draw_line(v1, v2):
-    if v1 and v2:
-        bgl.glBegin(bgl.GL_LINES)
-        bgl.glVertex2f(*v1)
-        bgl.glVertex2f(*v2)
-        bgl.glEnd()
-
-def generate_edges(*args, **kw):
-        if kw['images_name'] in args:
-            i = args.index(kw["images_name"])
-        if kw['display_name'] in args:
-            j = args.index(kw["display_name"])
-        tup = (i, j)
-        Edges.append(tup)        
-        
-def draw_main(context):
-    scene = context.scene
-
-    rgb_line = (0.173, 0.545, 1.0, 1.0)
-    rgb_label = (0.1, 0.1, 0.1, 1.0)
-    fsize = 16
-
-    bgl.glEnable(bgl.GL_BLEND)
-    bgl.glLineWidth(1)
-    bgl.glColor4f(*rgb_line)
-
-    for edge in network["edges"]:
-        # 通过遍历获取源和目标的位置
-        source_name = edge["images_name"]
-        target_name = edge["display_name"]
-        source_obj = bpy.data.objects[source_name]
-        target_obj = bpy.data.objects[target_name]
-        # source_obj = target_obj.parent
-        v1 = gl_pts(context, source_obj.matrix_world.to_translation())
-        v2 = gl_pts(context, target_obj.matrix_world.to_translation())
-        draw_line(v1, v2)
-
-    # Store reference to active object
-    ob = context.object
-    #print(ob)
-    
-    if scene.gl_display_names:
-        draw_name(context, ob, rgb_label, fsize)
-
-    bgl.glLineWidth(1)
-    bgl.glDisable(bgl.GL_BLEND)
-    bgl.glColor4f(0.0, 0.0, 0.0, 1.0)
-
 class glrun(bpy.types.Operator):
     bl_idname = 'glinfo.glrun'
     bl_label = 'Display lines'
@@ -361,6 +360,7 @@ class glpanel(bpy.types.Panel):
         #name_ob = context.object.name
         # name_ob = context.scene.objects.active.name
         name_ob = context.selected_objects[0].name
+        # name_ob = context.active_object.name
         for instance in data_instance:
   
             if instance['display_name']==name_ob:
@@ -553,16 +553,31 @@ def draw_network(network):
 
     # 生成结点
     for key, node in network["nodes"].items():
-
+     
         # 结点的颜色设定
-        col = node.get("color", choice(list(colors.keys())))
+        # col = node.get("color", choice(list(colors.keys())))
 
         # 复制原始网格并且生成新节点
         node_cube = cube.copy()
         node_cube.data = cube.data.copy()
         node_cube.name = key
+
+        for name_instance in data_instance:
+            if name_instance["display_name"]==key:
+                node_cube.scale = (0.5,0.5,0.5)
+                if name_instance["vm_state"]=="active":
+                    node_cube.active_material = bpy.data.materials["green"]
+                elif name_instance["vm_state"]=="stopped":
+                    node_cube.active_material = bpy.data.materials["gray"]
+            else:
+                for name_instance in data_image:
+                    if name_instance["images_name"]==key:
+                        node_cube.active_material = bpy.data.materials["blue"]
+                    elif name_instance["status"]=="stopped":
+                        node_cube.active_material = bpy.data.materials["red"]
+                
         node_cube.location = node["location"]
-        node_cube.active_material = bpy.data.materials[col]
+        # node_cube.active_material = bpy.data.materials[col]
         bpy.context.scene.objects.link(node_cube)
         shapes.append(node_cube)
     
@@ -570,7 +585,7 @@ def draw_network(network):
         # 通过遍历获取源和目标的位置
         source_name = edge["images_name"]
         target_name = edge["display_name"]
-        source_obj = bpy.data.objects[source_name]
+        source_obj = bpy.data.objects[source_name]     
         target_obj = bpy.data.objects[target_name]
         # 设置父子关系
         bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -601,38 +616,42 @@ data0 = []
 if __name__ == "__main__":
     bpy.context.scene.layers[0] = False
     bpy.context.scene.layers[1] = True
-    
-    # try:
-        # with open("e:/20190107.json") as in_file:
-            # for line in in_file.readlines():
-                # edges = json.loads(line)
-                # data0.append(edges)
-                # edges = data0
-    # except IOError:
-        # with open(sys.argv[-1]) as in_file:
-            # for line in in_file.readlines():
-                # edges = json.loads(line)
-                # data0.append(edges)
-                # edges = data0
-    # print(edges)
-    # available_nodes = set(e["memory_mb"] for e in edges) | set(e["display_name"] for e in edges)
-    # labels = list(available_nodes)
-    
-    # Edges = []
-    
-    # for k in range(len(edges)):
-        # generate_edges(*labels, **edges[k])
-    # G = ig.Graph(Edges, directed = False)
-    # layt = G.layout("kk", dim = 3)
-    # layt.center()
-    # master_nodes = {}
-    # for i in range(len(labels)):
-        # master_nodes[labels[i]] = {"location":[j*10 for j in layt[i]]}
 
-    # json_str = dumps({"edges": edges, "nodes": master_nodes})
-    # network = json.loads(json_str)
+    data_s=[]
+    with open("json/instance_info.json") as in_file:
+            for line in in_file.readlines():     
+                edges1 = json.loads(line)        
+                data_s.append(edges1)
+                edges1 = data_s      
+    available_nodes = set(e["images_name"] for e in edges1) | set(e["display_name"] for e in edges1)       
+    labels = list(available_nodes)
+    
+    Edges = []
+    def generate_edges(*args, **kw):
+        if kw['images_name'] in args:
+            i = args.index(kw["images_name"])
+        if kw['display_name'] in args:
+            j = args.index(kw["display_name"])
+        tup = (i, j)
+        Edges.append(tup)
+    for k in range(len(edges1)):
+        generate_edges(*labels, **edges1[k])
+    G = ig.Graph(Edges, directed = False)
+        
+    layt = G.layout("kk", dim = 3)
+    layt.center()
+    master_nodes = {}
+    for i in range(len(labels)):
+        master_nodes[labels[i]] = {"location":[j*10 for j in layt[i]]}
 
-    # draw_network(network)
+    json_str = dumps({"edges": edges1, "nodes": master_nodes})
+    network = json.loads(json_str)
+
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all()
+    bpy.ops.object.delete()
+
+    draw_network(network)
         
     with open("json/20181213.json") as f:
         tmp = json.load(f)
